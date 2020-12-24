@@ -16,7 +16,7 @@ export default new Vuex.Store({
       longitude: -78.62569546694641
     },
 
-    gpx: undefined, // GPX data as a js object.
+    gpx: undefined, // GPX data as a js object
     points: [
       { latitude: 35.773320843919535, longitude: -78.64989296770497, timestamp: new Date(1608515476), distance: 0, distanceTravelled: 0, speed: 0 },
       { latitude: 35.773280584709084, longitude: -78.64964620447194, timestamp: new Date(1608525476), distance: 0, distanceTravelled: 0, speed: 0 },
@@ -56,8 +56,9 @@ export default new Vuex.Store({
     lineBearing: 0,
     routeLength: 0,
     averageDistance: 0,
+    averageSpeed: 0,
     highestDistance: 0,
-    standardDeviation: 0,
+    longestTravelled: 0,
 
     hasStats: false
   },
@@ -102,6 +103,8 @@ export default new Vuex.Store({
       
       var totalDistance = 0;
       var highestDistance = 0;
+      var longestTravelled = 0;
+      var totalSpeed = 0;
       for (let i = 0; i < state.points.length; i++) {
         // Calculate accuracy statistics.
         let distance = geolib.getDistanceFromLine(state.points[i], state.start, state.end);
@@ -109,19 +112,27 @@ export default new Vuex.Store({
         totalDistance += distance;
         if (distance > highestDistance) highestDistance = distance;
         state.points[i].distance = distance;
+        state.averageDistance = Math.round((totalDistance / state.points.length) * 1000) / 1000;
+        state.highestDistance = Math.round(highestDistance * 1000) / 1000
 
         // Calculate speed statistics.
         if (i > 0) {
           state.points[i].distanceTravelled = geolib.getPreciseDistance(state.points[i], state.points[i-1], 3);
           let timeDifference = (state.points[i].timestamp.getTime() - state.points[i - 1].timestamp.getTime()) / 1000;
           state.points[i].speed = state.points[i].distanceTravelled / timeDifference * 2.23694; // mph = m/s * 2.23694
+          totalSpeed += state.points[i].speed
+          if (state.points[i].distanceTravelled > longestTravelled) {
+            longestTravelled = state.points[i].distanceTravelled;
+          }
         } else {
           state.points[i].distanceTravelled = 0;
           state.points[i].speed = 0;
         }
       }
-      state.averageDistance = Math.round((totalDistance / state.points.length) * 1000) / 1000;
-      state.highestDistance = Math.round(highestDistance * 1000) / 1000
+
+      state.averageSpeed = Math.round(totalSpeed / (state.points.length - 1) * 1000) / 1000;
+      state.longestTravelled = longestTravelled;
+      
     
       state.hasStats = true;
     }

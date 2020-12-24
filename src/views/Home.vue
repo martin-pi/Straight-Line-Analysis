@@ -49,7 +49,7 @@
       <sui-grid>
         <sui-grid-row :columns="2">
           <sui-grid-column>
-            <h3>Line Data</h3>
+            <h3>Journey Data</h3>
             <ul>
               <li>Number of points: {{ $store.state.points.length }}</li>
               <li>Furthest distance from line: {{ $store.state.highestDistance }}m</li>
@@ -62,15 +62,14 @@
             </ul>
           </sui-grid-column>
           <sui-grid-column>
-            <h3>Journey Data</h3>
+            <h3>Line Data</h3>
             <ul>
-              <li>Line length: {{ $store.state.points.length }}</li>
+              <li>Line length: {{ $store.state.lineLength / 1000 }}km</li>
               <li>Furthest distance from line: {{ $store.state.highestDistance }}m</li>
               <li>Mean distance from line: {{ $store.state.averageDistance }}m</li>
               <li>TODO: Time taken:</li>
-              <li>TODO: Average speed:</li>
-              <li>TODO: Furthest distance between recorded points:</li>
-              <li>TODO: standard deviation:</li>
+              <li>Average speed: {{ $store.state.averageSpeed }}mph</li>
+              <li>Furthest distance between recorded points: {{ $store.state.longestTravelled }}m</li>
             </ul>
           </sui-grid-column>
         </sui-grid-row>

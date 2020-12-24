@@ -16,7 +16,7 @@ export default {
           y: point.speed
         })
       });
-      this.series = [{name: 'Distance', data: data}];
+      this.series = [{name: 'Speed', data: data}];
     }
   },
 

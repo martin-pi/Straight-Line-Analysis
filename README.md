@@ -29,11 +29,11 @@ npm install
 ```
 npm run serve
 ```
-### Building locally for production:
+### Test production build scripts:
 ```
 npm run lint
 npm run build
 ```
 
-# Deployment
-
+# Deployment:
+A Github Action will automatically deploy the application every time a commit is pushed/merged to the main branch. No need to build anything manually.

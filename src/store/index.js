@@ -3,6 +3,36 @@ import Vuex from 'vuex'
 
 import * as geolib from 'geolib'
 
+
+// TODO At some point there should be a PR into geolib to allow us to use getPreciseDistance natively.
+// Until then, this INCREDIBLY sketchy rewrite/workaround will get us accurate measurements.
+function getDistanceFromLine(point, lineStart, lineEnd) {
+  const d1 = geolib.getPreciseDistance(lineStart, point, 0.0001);
+  const d2 = geolib.getPreciseDistance(point, lineEnd, 0.0001);
+  const d3 = geolib.getPreciseDistance(lineStart, lineEnd, 0.0001);
+
+  // alpha is the angle between the line from start to point, and from start to end
+  const alpha = Math.acos(Math.max(Math.min((d1 * d1 + d3 * d3 - d2 * d2) / (2 * d1 * d3), 1), -1));
+
+  // beta is the angle between the line from end to point and from end to start //
+  const beta = Math.acos(Math.max(Math.min((d2 * d2 + d3 * d3 - d1 * d1) / (2 * d2 * d3), 1), -1));
+
+  // if the angle is greater than 90 degrees, then the minimum distance is the
+  // line from the start to the point
+  if (alpha > Math.PI / 2) {
+      return d1;
+  }
+
+  if (beta > Math.PI / 2) {
+      // same for the beta
+      return d2;
+  }
+
+  // otherwise the minimum distance is achieved through a line perpendicular
+  // to the start-end line, which goes from the start-end line to the point
+  return Math.sin(alpha) * d1;
+}
+
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -97,7 +127,7 @@ export default new Vuex.Store({
     },
 
     calculateLineStats(state) {
-      state.lineLength = geolib.getPreciseDistance(state.start, state.end, 3);
+      state.lineLength = geolib.getPreciseDistance(state.start, state.end, 1);
       state.lineBearing = geolib.getRhumbLineBearing(state.start, state.end);
       state.routeLength = geolib.getPathLength(state.points);
       
@@ -107,7 +137,7 @@ export default new Vuex.Store({
       var totalSpeed = 0;
       for (let i = 0; i < state.points.length; i++) {
         // Calculate accuracy statistics.
-        let distance = geolib.getDistanceFromLine(state.points[i], state.start, state.end);
+        let distance = getDistanceFromLine(state.points[i], state.start, state.end);
         if (isNaN(distance)) distance = 0;
         totalDistance += distance;
         if (distance > highestDistance) highestDistance = distance;
